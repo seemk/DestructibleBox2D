@@ -10,8 +10,7 @@ std::unique_ptr<b2ChainShape> ShapeFactory::chain(const b2Vec2* points, int coun
 	
 	copyScaled(points, count);
 
-	auto shape = std::make_unique<b2ChainShape>();
-
+	std::unique_ptr<b2ChainShape> shape{ new b2ChainShape() };
 	if (closed)
 	{
 		shape->CreateLoop(buffer.data(), buffer.size());
@@ -26,8 +25,7 @@ std::unique_ptr<b2ChainShape> ShapeFactory::chain(const b2Vec2* points, int coun
 
 std::unique_ptr<b2PolygonShape> ShapeFactory::polygon(const b2Vec2* points, int count)
 {
-	auto shape = std::make_unique<b2PolygonShape>();
-
+	std::unique_ptr<b2PolygonShape> shape{ new b2PolygonShape() };
 	copyScaled(points, count);
 
 	shape->Set(buffer.data(), buffer.size());
@@ -37,8 +35,8 @@ std::unique_ptr<b2PolygonShape> ShapeFactory::polygon(const b2Vec2* points, int 
 
 std::unique_ptr<b2PolygonShape> ShapeFactory::polygon_rect(b2Vec2 position, float width, float height, float angle)
 {
-	auto shape = std::make_unique<b2PolygonShape>();
 
+	std::unique_ptr<b2PolygonShape> shape{ new b2PolygonShape() };
 	shape->SetAsBox(scale * width * 0.5f, scale * height * 0.5f, { position.x * scale, position.y * scale }, angle);
 
 	return shape;
@@ -46,7 +44,7 @@ std::unique_ptr<b2PolygonShape> ShapeFactory::polygon_rect(b2Vec2 position, floa
 
 std::unique_ptr<b2CircleShape> ShapeFactory::circle(b2Vec2 position, float radius)
 {
-	auto shape = std::make_unique<b2CircleShape>();
+	std::unique_ptr<b2CircleShape> shape{ new b2CircleShape() };
 	shape->m_p = { position.x * scale, position.y * scale };
 	shape->m_radius = radius * scale;
 

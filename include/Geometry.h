@@ -13,13 +13,13 @@ BOOST_GEOMETRY_REGISTER_POINT_2D(b2Vec2, float, boost::geometry::cs::cartesian, 
 // Template parameters for boost::geometry::model::ring
 // <typename Point, bool ClockWise, bool Closed>
 typedef boost::geometry::model::ring<b2Vec2, false, true> ring_t;
-typedef std::vector<ring_t> geometry_result_t;
+typedef std::vector<ring_t> ring_collection_t;
 
 ring_t convertShape(b2Vec2 position, const b2ChainShape* source_shape);
 
 
-geometry_result_t subtract(const ring_t& source, const ring_t& subtrahend);
-void simplify(geometry_result_t& rings);
+ring_collection_t subtract(const ring_t& source, const ring_t& subtrahend);
+void simplify(ring_collection_t& rings);
 ring_t makeConvexRing(b2Vec2 position, float radius, int vertices = 8);
 
 #endif

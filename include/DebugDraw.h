@@ -1,7 +1,6 @@
 #ifndef DEBUG_RENDERER_H
 #define DEBUG_RENDERER_H
 
-#include <SFML/Graphics/Text.hpp>
 #include <Box2D/Common/b2Draw.h>
 
 namespace sf

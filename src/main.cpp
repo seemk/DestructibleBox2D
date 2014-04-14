@@ -3,18 +3,12 @@
 #include <Box2D/Box2D.h>
 #include "DebugDraw.h"
 #include "ShapeFactory.h"
-#include <unordered_set>
-#include <iostream>
 #include "Geometry.h"
 #include "Constants.h"
+#include <unordered_set>
+#include <iostream>
 
 namespace bg = boost::geometry;
-
-namespace
-{
-	const float screenWidth = 1280.f;
-	const float screenHeight = 720.f;
-}
 
 typedef std::unordered_set<b2Body*> QueryResult;
 typedef std::pair<b2Body*, ring_t> match_t;
@@ -27,6 +21,12 @@ struct Shape
 		destructible = (1 << 1)
 	};
 };
+
+namespace
+{
+	const float screenWidth = 1280.f;
+	const float screenHeight = 720.f;
+}
 
 struct WorldQueryCallback : public b2QueryCallback
 {
@@ -52,13 +52,12 @@ struct WorldQueryCallback : public b2QueryCallback
 
 };
 
-// b2ChainShape clears the point buffer on destruction
-std::vector<std::unique_ptr<b2ChainShape>> convertGeometry(const geometry_result_t& rings)
+std::vector<std::unique_ptr<b2ChainShape>> convertGeometry(const ring_collection_t& rings)
 {
 	std::vector<std::unique_ptr<b2ChainShape>> shapes;
 	for (const auto& r : rings)
 	{
-		auto shape = std::make_unique<b2ChainShape>();
+		std::unique_ptr<b2ChainShape> shape{ new b2ChainShape() };
 		shape->CreateChain(r.data(), r.size());
 		shapes.push_back(std::move(shape));
 	}
@@ -92,10 +91,12 @@ void step(b2World& world, float dt)
 	world.ClearForces();
 }
 
+
+
 void addStaticShapes(b2World& world)
 {
 
-	ShapeFactory factory;
+	ShapeFactory factory { constants::RENDER_SCALE };
 	// Add the nondestructible screen edges
 	std::vector<b2Vec2> boundaryPoints =
 	{ b2Vec2{ 0.0f, 0.0f }, b2Vec2{ 0.0f, screenHeight },
@@ -230,11 +231,14 @@ int main()
 		return 1;
 	}
 	overlayText.setCharacterSize(10);
-	overlayText.setString("Hold left mouse to modify\nPress right mouse to add objects");
+	overlayText.setString("Hold left mouse button to modify\nRight mouse button to add objects");
 
+	sf::VideoMode videoMode{ static_cast<unsigned int>(screenWidth),
+							 static_cast<unsigned int>(screenHeight) };
 
-	sf::RenderWindow window(sf::VideoMode(screenWidth, screenHeight), "Box2D modifiable geometry");
-	auto physicsWorld = std::make_unique<b2World>(b2Vec2{ 0.0f, 18.0f });
+	sf::RenderWindow window(videoMode, "Box2D modifiable geometry");
+
+	std::unique_ptr<b2World> physicsWorld{ new b2World{ b2Vec2{ 0.0f, 18.0f } } };
 	physicsWorld->SetAutoClearForces(false);
 	physicsWorld->SetContactListener(nullptr);
 	DebugDraw debugDraw(&window, physicsWorld.get());
@@ -261,7 +265,7 @@ int main()
 			if (event.type == sf::Event::MouseButtonPressed && 
 				event.mouseButton.button == sf::Mouse::Button::Right)
 			{
-				ShapeFactory factory;
+				ShapeFactory factory{ constants::RENDER_SCALE };
 				auto ballShape = factory.circle(position, removalRadius / 2.f);
 				b2BodyDef ballDef;
 				b2Body* ballBody = physicsWorld->CreateBody(&ballDef);

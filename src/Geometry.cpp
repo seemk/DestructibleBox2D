@@ -15,14 +15,14 @@ ring_t convertShape(b2Vec2 position, const b2ChainShape* source_shape)
 	return ring;
 }
 
-geometry_result_t subtract(const ring_t& source, const ring_t& subtrahend)
+ring_collection_t subtract(const ring_t& source, const ring_t& subtrahend)
 {
-	geometry_result_t out;
+	ring_collection_t out;
 	bg::difference(source, subtrahend, out);
 	return out;
 }
 
-void simplify(geometry_result_t& rings)
+void simplify(ring_collection_t& rings)
 {
     std::transform(rings.begin(), rings.end(), rings.begin(), [](const ring_t& r){
         ring_t simplified;
@@ -55,5 +55,4 @@ ring_t makeConvexRing(b2Vec2 position, float radius, int vertices)
 	}
 
 	return convexRing;
-
 }
