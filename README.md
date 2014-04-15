@@ -22,4 +22,5 @@ On Linux:
 mkdir build
 cd build
 cmake path_to_source -DCMAKE_BUILD_TYPE=Release
+make
 ```
