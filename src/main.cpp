@@ -164,7 +164,7 @@ std::vector<match_t> matchBodiesToRings(It begin, It end)
 	return batch;
 }
 
-void processRemoval(b2Vec2 removalPosition, float removalRadius, b2World& world)
+void processRemoval(b2Vec2 removalPosition, float removalRadius, b2World& world, bool simplifyGeometry)
 {
 	auto foundBodies = queryDestructibleBodies(removalPosition, removalRadius, world);
 	auto batch = matchBodiesToRings(foundBodies.begin(), foundBodies.end());
@@ -189,7 +189,11 @@ void processRemoval(b2Vec2 removalPosition, float removalRadius, b2World& world)
 	std::for_each(batch.begin(), borderIt, [&](const match_t& m) {
 		auto subtractionResult = subtract(m.second, diff);
 		// Simplify the results
-		simplify(subtractionResult);
+		if (simplifyGeometry)
+		{
+			simplify(subtractionResult);
+		}
+		
 		// Convert the rings to b2ChainShapes and add to result shapes
 		auto converted = convertGeometry(subtractionResult);
 
@@ -236,7 +240,9 @@ int main()
 	sf::VideoMode videoMode{ static_cast<unsigned int>(screenWidth),
 							 static_cast<unsigned int>(screenHeight) };
 
-	sf::RenderWindow window(videoMode, "Box2D modifiable geometry");
+	sf::ContextSettings settings;
+	settings.antialiasingLevel = 8;
+	sf::RenderWindow window(videoMode, "Box2D modifiable geometry", sf::Style::Default, settings);
 
 	std::unique_ptr<b2World> physicsWorld{ new b2World{ b2Vec2{ 0.0f, 18.0f } } };
 	physicsWorld->SetAutoClearForces(false);
@@ -246,6 +252,8 @@ int main()
 	addStaticShapes(*physicsWorld);
 
 	sf::Clock clock;
+
+	bool simplifyGeometry = true;
 	while (window.isOpen())
 	{
 		float elapsed = clock.restart().asSeconds();
@@ -276,6 +284,11 @@ int main()
 				filter.maskBits = Shape::normal | Shape::destructible;
 				ballFixture->SetFilterData(filter);
 			}
+			if (event.type == sf::Event::KeyReleased &&
+				event.key.code == sf::Keyboard::S)
+			{
+				simplifyGeometry = !simplifyGeometry;
+			}
 		}
 
 		window.clear();
@@ -288,7 +301,7 @@ int main()
 
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
 		{
-			processRemoval(scaledPos, scaledRadius, *physicsWorld);
+			processRemoval(scaledPos, scaledRadius, *physicsWorld, simplifyGeometry);
 			drawMouseIndicator(worldPos, removalRadius, window);
 		}
 

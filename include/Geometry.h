@@ -17,7 +17,6 @@ typedef std::vector<ring_t> ring_collection_t;
 
 ring_t convertShape(b2Vec2 position, const b2ChainShape* source_shape);
 
-
 ring_collection_t subtract(const ring_t& source, const ring_t& subtrahend);
 void simplify(ring_collection_t& rings);
 ring_t makeConvexRing(b2Vec2 position, float radius, int vertices = 8);
